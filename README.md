@@ -1,4 +1,5 @@
 # Daedalus SDK
+![telegram-cloud-photo-size-1-5057882066661780485-y](https://github.com/bigrogerio/daedalus/assets/62626374/2eec58ce-edf5-47ed-b2eb-e23105cc48d1)
 
 This is the **Daedalus** project, a software development kit for generating
 graphs of repositories, focused on Airflow repos.
