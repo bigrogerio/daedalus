@@ -10,6 +10,9 @@ executable, `daedalus-cli`, which the developers can use for creating templates 
 all development steps in accordance with DevOps standards. Eventually it can
 also be imported as regular python package for additional usage of its modules
 
+### Open Tasks
+
+- [] Separate airflow 1 and airflow 2 plugins and operators reference
 
 # Contributing
 
