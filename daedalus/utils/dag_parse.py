@@ -47,55 +47,47 @@ def find_python_files(directory='.'):
     return python_files
 
 def extract_file_references(filename):
-    file_references = []
-
-    # Parse the Python file into an AST
-    with open(filename, 'r') as f:
-        tree = ast.parse(f.read(), filename=filename)
-
-    # Traverse the AST nodes
+    open_file_references= []
+    with open(filename, 'r') as file:
+        tree = ast.parse(file.read(), filename=filename)
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == 'open':
-            # Found an 'open()' function call
-            print(node)
-            print(node.args)
-            for arg in node.args:
-                print(eval(arg))
-            if len(node.args) >= 1 and isinstance(node.args[0], ast.Str):
-                # Extract the file path argument passed to 'open()'
-                file_path = node.args[0].s
-                file_references.append(file_path)
+       if  isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
+            if node.func.id=='open':
+                open_file_references.append(node.args[0])
+    return open_file_references
 
-    return file_references
-
-def resolve_ast_name_assigns(assign_node_list, variable_definitions={}):
+def resolve_ast_name_assigns(ast_tree, variable_definitions={}):
+    assign_node_list=[node for node in ast_tree if isinstance(node, ast.Assign)]
     resolve_dict={}
     state={}
     for node in assign_node_list:
         for target in node.targets:
             resolve_dict[target]= node.value
     for key in resolve_dict.keys():
-        if isinstance(resolve_dict[key], ast.Constant):
-            state[key.id]=ast.literal_eval(resolve_dict[key])
-        elif isinstance(resolve_dict[key], ast.Name):
-            state[key.id]=state[resolve_dict[key].id]
-        elif is_airflow_variable_call(resolve_dict[key]):
-            state[key.id]=resolve_airflow_variable(resolve_dict[key], variable_definitions)
-        elif isinstance(resolve_dict[key], ast.JoinedStr):
-            state[key.id]=resolve_joined_string(resolve_dict[key], state)
+        if isinstance(key, ast.Name) and key.id in list(state.keys()):
+            if isinstance(resolve_dict[key], ast.Constant):
+                state[key.id]=ast.literal_eval(resolve_dict[key])
+            elif isinstance(resolve_dict[key], ast.Name):
+                state[key.id]=state[resolve_dict[key].id]
+            elif is_airflow_variable_call(resolve_dict[key]):
+                state[key.id]=resolve_airflow_variable(resolve_dict[key], variable_definitions)
+            elif isinstance(resolve_dict[key], ast.JoinedStr):
+                state[key.id]=resolve_joined_string(resolve_dict[key], state)
     return state
 
-def resolve_joined_string(ast_node, state):
-    if isinstance(ast_node, ast.JoinedStr):
-        resolved=''
-        for value in ast_node.values:
-            if isinstance(value, ast.FormattedValue):
-                resolved+=state[value.value.id]
+def resolve_joined_string(ast_JoinedStr_node, state):
+    resolved=''
+    if not isinstance(ast_JoinedStr_node, ast.JoinedStr):
+        return resolved
+    else:
+        for value in ast_JoinedStr_node.values:
+            if isinstance(value, ast.FormattedValue) and isinstance(value.value, ast.Name):
+                if value.value.id in list(state):
+                    resolved+=state[value.value.id]
             if isinstance(value, ast.Constant):
                 resolved+=ast.literal_eval(value)
         return resolved
-    return None
-
+    
 def is_airflow_variable_call(ast_node):
     if isinstance(ast_node, ast.Call):
         if ast.dump(ast_node.func)=="Attribute(value=Name(id='Variable', ctx=Load()), attr='get', ctx=Load())":
@@ -108,7 +100,10 @@ def get_airflow_variable_from_call(ast_node):
     return None
 
 def resolve_airflow_variable(ast_node, variable_definitions):
-    return variable_definitions[ast_node.args[0].value]
+    if isinstance(ast_node, ast.Constant):
+        if ast_node.args[0].value in list(variable_definitions.keys()):
+            return variable_definitions[ast_node.args[0].value]
+    return f'undefined_variable_reference'
 
 
 def main():

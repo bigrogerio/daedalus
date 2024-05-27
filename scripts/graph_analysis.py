@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from pyvis.network import Network
 
-with open("dag_dependencies.json", "r") as f:
+with open("/Users/BRNGA049/Documents/carrefour/dag_parser/airflow2_dolphin_prd/airflow2_graph.json", "r") as f:
     adjacency_dict = json.load(f)
 
 G_dir = nx.DiGraph()
@@ -27,12 +27,4 @@ net = Network(
 )
 net.show_buttons()  # Show part 3 in the plot (optional)
 net.from_nx(G_dir)  # Create directly from nx graph
-net.show("test.html", notebook=False)
-
-
-# Draw the graph
-# nx.draw(G_giant_dir, with_labels=True, node_color='skyblue', node_size=0.1, font_size=0.002, font_color='black', width=0.03, pos=nx.planar_layout(G_giant_dir), alpha=0.7)
-
-# Display the graph
-# plt.savefig('semi_giant_directed.pdf', dpi=5000)
-# plt.show()
+net.show("airflow2.html", notebook=False)
