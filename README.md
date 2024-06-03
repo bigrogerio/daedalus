@@ -18,6 +18,7 @@ and to use graph related algorithms to mathematically define complexity of the a
 critical points of failure, emerging design patterns, etc. By compiling the dependency trees as graphs
 all DG analysis methods are trivially in scope, be it node-based, edge-based, motiff-based or subgraph-based
 descriptors.
+
 We work under the assumption that the `daedalus` package only has access to the directories of the airflow.
 Which means we do not run `daedalus` in the run-time environment of the airflow DAGs, so that we assume that
 all references to external variables and files are contained in `open` and `airflow.models.Variables` calls.
