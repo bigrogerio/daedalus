@@ -48,7 +48,7 @@ Consider the parsing of a typical `airflow` environment.
 
 We can use the `daedalus.dag_parse` module to generate a graph object in `networkx` and dinamically analyse it with the `pyvis` module.
 Consider the following script:
-```
+```python
 import ast
 import json
 import re
